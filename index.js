@@ -3,7 +3,7 @@ module.exports.filter = filter
 
 var EventEmitter = require('events').EventEmitter
 
-function reemit (source, target, events) {
+function reemit (source, target, events, handleDestr) {
   if (!Array.isArray(events)) events = [ events ]
   var result = []
 
@@ -14,9 +14,16 @@ function reemit (source, target, events) {
       target.emit.apply(target, args)
     }
     source.on(event, callback)
-    result.push(function(){
+
+    var destroyer = function(){
       source.removeListener(event, callback)
-    })
+    }
+    
+    result.push(destroyer)
+
+    if (handleDestr) {
+      handleDestr(target, destroyer)
+    }
   })
 
   return result;
